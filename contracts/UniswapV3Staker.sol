@@ -165,7 +165,7 @@ contract UniswapV3Staker is IUniswapV3Staker, Multicall {
         emit DepositTransferred(tokenId, address(0), from);
 
         if (data.length > 0) {
-            if (data.length == 160) {
+            if (data.length == 192) {
                 _stakeToken(abi.decode(data, (IncentiveKey)), tokenId);
             } else {
                 IncentiveKey[] memory keys = abi.decode(data, (IncentiveKey[]));
@@ -206,11 +206,6 @@ contract UniswapV3Staker is IUniswapV3Staker, Multicall {
     /// @inheritdoc IUniswapV3Staker
     function stakeToken(IncentiveKey memory key, uint256 tokenId) external override {
         require(deposits[tokenId].owner == msg.sender, 'UniswapV3Staker::stakeToken: only owner can stake token');
-
-        require(
-            deposits[tokenId].tickUpper - deposits[tokenId].tickLower >= key.minWidth,
-            'UniswapV3Staker::stakeToken: range must be larger than minWidth'
-        );
 
         _stakeToken(key, tokenId);
     }
@@ -317,6 +312,11 @@ contract UniswapV3Staker is IUniswapV3Staker, Multicall {
     function _stakeToken(IncentiveKey memory key, uint256 tokenId) private {
         require(block.timestamp >= key.startTime, 'UniswapV3Staker::stakeToken: incentive not started');
         require(block.timestamp < key.endTime, 'UniswapV3Staker::stakeToken: incentive ended');
+
+        require(
+            deposits[tokenId].tickUpper - deposits[tokenId].tickLower >= key.minWidth,
+            'UniswapV3Staker::stakeToken: range must be larger than minWidth'
+        );
 
         bytes32 incentiveId = IncentiveId.compute(key);
 
