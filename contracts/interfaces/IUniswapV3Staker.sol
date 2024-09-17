@@ -25,7 +25,6 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         IUniswapV3Pool pool;
         uint256 startTime;
         uint256 endTime;
-        int24 minWidth;
         address refundee;
     }
 
@@ -89,7 +88,8 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @notice Creates a new liquidity mining incentive program
     /// @param key Details of the incentive to create
     /// @param reward The amount of reward tokens to be distributed
-    function createIncentive(IncentiveKey memory key, uint256 reward) external;
+    /// @param minimumWidth The minimum width of a staked position
+    function createIncentive(IncentiveKey memory key, uint256 reward, int24 minimumWidth) external;
 
     /// @notice Ends an incentive after the incentive end time has passed and all stakes have been withdrawn
     /// @param key Details of the incentive to end
@@ -140,6 +140,11 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         external
         returns (uint256 reward, uint160 secondsInsideX128);
 
+    /// @notice Updates the minimum width of a staked position
+    /// @param key The key of the incentive
+    /// @param minimumWidth The new minimum width of a staked position
+    function setMinimumWidth(IncentiveKey memory key, int24 minimumWidth) external;
+
     /// @notice Event emitted when a liquidity mining incentive has been created
     /// @param rewardToken The token being distributed as a reward
     /// @param pool The Uniswap V3 pool
@@ -153,8 +158,8 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
         IUniswapV3Pool indexed pool,
         uint256 startTime,
         uint256 endTime,
-        int24 minWidth,
         address refundee,
+        int24 minWidth,
         uint256 reward
     );
 
@@ -184,4 +189,9 @@ interface IUniswapV3Staker is IERC721Receiver, IMulticall {
     /// @param to The address where claimed rewards were sent to
     /// @param reward The amount of reward tokens claimed
     event RewardClaimed(address indexed to, uint256 reward);
+
+    /// @notice Event emitted when the minimum width of a staked position has been updated
+    /// @param incentiveId The ID of the incentive
+    /// @param minWidth The new minimum width of a staked position
+    event UpdatedMinimumWidth(bytes32 indexed incentiveId, int24 minWidth);
 }
